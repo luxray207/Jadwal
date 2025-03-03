@@ -7,23 +7,22 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>🌙 Jadwal Puasa Ramadan</h1>
-        <p>📅 <span id="date"></span></p>
-        <p>📍 Kota: <span id="city">Mendeteksi...</span></p>
-        <p>⏳ Jam: <span id="time">-</span></p>
-        <p>⌛ Berbuka dalam: <span id="countdown">-</span></p>
-    </header>
 
-    <section class="jadwal">
+    <div class="container">
+        <h1>🌙 Jadwal Puasa Ramadan</h1>
+        <p id="tanggal"></p>
+        <p>📍 Kota: <span id="lokasi">Mendeteksi...</span></p>
+        <p>⏳ Jam: <span id="jam">00:00:00</span></p>
+        <p>🍽️ Berbuka dalam: <span id="hitungMundur">Menghitung...</span></p>
+        
         <table>
             <tr><th>Waktu</th><th>Jam</th></tr>
             <tr><td>🌙 Sahur</td><td id="sahur">-</td></tr>
             <tr><td>⏳ Imsak</td><td id="imsak">-</td></tr>
             <tr><td>🕌 Tarawih</td><td id="tarawih">-</td></tr>
-            <tr><td>🍽️ Berbuka</td><td id="buka">-</td></tr>
+            <tr><td>🍽️ Berbuka</td><td id="berbuka">-</td></tr>
         </table>
-    </section>
+    </div>
 
     <script src="script.js"></script>
 </body>

@@ -1,80 +1,64 @@
-document.addEventListener("DOMContentLoaded", function() {
-    updateTime();
-    setInterval(updateTime, 1000);
-    getUserLocation();
-});
-
-function updateTime() {
+// 1️⃣ Update Jam Real-time
+function updateJam() {
     const now = new Date();
-    document.getElementById("time").textContent = now.toLocaleTimeString("id-ID");
-    document.getElementById("date").textContent = now.toLocaleDateString("id-ID", { day: 'numeric', month: 'long' });
+    const waktu = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    document.getElementById("jam").innerText = waktu;
 }
+setInterval(updateJam, 1000);
+updateJam();
 
-async function getUserLocation() {
+// 2️⃣ Ambil Lokasi dari IP
+async function getLokasi() {
     try {
-        const ipResponse = await fetch("https://ip-api.com/json/");
-        const ipData = await ipResponse.json();
-        document.getElementById("city").textContent = ipData.city;
-        getCityId(ipData.city);
+        const response = await fetch("https://ipapi.co/json/");
+        const data = await response.json();
+        const kota = data.city || "Tidak Diketahui";
+        document.getElementById("lokasi").innerText = kota;
+        getJadwalPuasa(kota);
     } catch (error) {
         console.error("Gagal mendapatkan lokasi:", error);
+        document.getElementById("lokasi").innerText = "Error!";
     }
 }
 
-async function getCityId(cityName) {
+// 3️⃣ Ambil Jadwal Puasa
+async function getJadwalPuasa(kota) {
     try {
-        const cityResponse = await fetch("https://api.banghasan.com/sholat/format/json/kota");
-        const cityData = await cityResponse.json();
-        const city = cityData.kota.find(k => k.nama.toLowerCase() === cityName.toLowerCase());
-
-        if (city) {
-            fetchJadwal(city.id);
-        } else {
-            alert("Kota tidak ditemukan dalam database.");
-        }
-    } catch (error) {
-        console.error("Error mendapatkan ID kota:", error);
-    }
-}
-
-async function fetchJadwal(cityId) {
-    const today = new Date().toISOString().split('T')[0];
-    const apiUrl = `https://api.banghasan.com/sholat/format/json/jadwal/kota/${cityId}/tanggal/${today}`;
-
-    try {
-        const response = await fetch(apiUrl);
+        const response = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=${kota}&country=Indonesia`);
         const data = await response.json();
+        const jadwal = data.data.timings;
 
-        if (data.jadwal) {
-            document.getElementById("imsak").textContent = data.jadwal.data.imsak;
-            document.getElementById("sahur").textContent = data.jadwal.data.subuh;
-            document.getElementById("buka").textContent = data.jadwal.data.maghrib;
-            document.getElementById("tarawih").textContent = data.jadwal.data.isya;
+        document.getElementById("sahur").innerText = jadwal.Fajr; 
+        document.getElementById("imsak").innerText = jadwal.Imsak;
+        document.getElementById("berbuka").innerText = jadwal.Maghrib;
+        document.getElementById("tarawih").innerText = jadwal.Isha;
 
-            startCountdown(data.jadwal.data.maghrib);
-        }
+        hitungWaktuBerbuka(jadwal.Maghrib);
     } catch (error) {
-        alert("Terjadi kesalahan dalam mengambil data.");
-        console.error(error);
+        console.error("Gagal mendapatkan jadwal:", error);
+        document.getElementById("berbuka").innerText = "Error!";
     }
 }
 
-function startCountdown(maghribTime) {
-    const now = new Date();
-    const [hour, minute] = maghribTime.split(":").map(Number);
-    const bukaTime = new Date();
-    bukaTime.setHours(hour, minute, 0);
+// 4️⃣ Hitung Mundur Waktu Berbuka
+function hitungWaktuBerbuka(maghrib) {
+    function updateHitungan() {
+        const sekarang = new Date();
+        const [jam, menit] = maghrib.split(":").map(Number);
+        const waktuBerbuka = new Date();
+        waktuBerbuka.setHours(jam, menit, 0);
 
-    let interval = setInterval(() => {
-        const diff = bukaTime - new Date();
-        if (diff <= 0) {
-            document.getElementById("countdown").textContent = "Sudah waktunya berbuka!";
-            clearInterval(interval);
-            return;
-        }
-        const hours = Math.floor(diff / 3600000);
-        const minutes = Math.floor((diff % 3600000) / 60000);
-        const seconds = Math.floor((diff % 60000) / 1000);
-        document.getElementById("countdown").textContent = `${hours}j ${minutes}m ${seconds}d`;
-    }, 1000);
+        let sisaWaktu = (waktuBerbuka - sekarang) / 1000;
+        if (sisaWaktu < 0) sisaWaktu += 86400;
+
+        const jamSisa = Math.floor(sisaWaktu / 3600);
+        const menitSisa = Math.floor((sisaWaktu % 3600) / 60);
+        const detikSisa = Math.floor(sisaWaktu % 60);
+        document.getElementById("hitungMundur").innerText = `${jamSisa}j ${menitSisa}m ${detikSisa}d`;
+    }
+    setInterval(updateHitungan, 1000);
+    updateHitungan();
 }
+
+// Jalankan semua fungsi
+getLokasi();
